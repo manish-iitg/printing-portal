@@ -23,10 +23,15 @@ def place_order(request):
         if form.is_valid():
             name = request.session['user']['name']
             email = request.session['user']['email']
+
+            shopkeeper_email = 'mgupta@iitg.ac.in'
+            location = 'CORE-1'
+
             starting_page = form.cleaned_data.get('starting_page')
             ending_page = form.cleaned_data.get('ending_page')
             no_of_copies = form.cleaned_data.get('no_of_copies')
             black_and_white = form.cleaned_data.get('black_and_white')
+
             num_pages = ending_page-starting_page+1
             price_black_and_white = 1
             price_color = 5
@@ -36,12 +41,13 @@ def place_order(request):
             else:
                 cost = num_pages*price_color
                 cost = cost*no_of_copies
+                
             order.objects.create(
                 customer_name = name,
                 customer_email = email,
                 
-                shopkeeper_name = name,
-                shopkeeper_email = email,
+                shopkeeper_email = shopkeeper_email,
+                shopkeeper_location = location,
 
                 docfile = request.FILES['docfile'],
 
@@ -56,7 +62,7 @@ def place_order(request):
         form = PlaceOrderForm()
         key = 'user'
         if key in request.session:
-            return render(request,'task/place_order.html',{'form':form, 'user': request.session[key]}) 
+            return render(request,'order/place_order.html',{'form':form, 'user': request.session[key]}) 
         else:
             return redirect('home')
 

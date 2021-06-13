@@ -13,13 +13,19 @@ class order(models.Model):
     shopkeeper_location = models.CharField(max_length=100)
 
     # doc info(files, pages to be printed, black/white or colour, etc)
-    pdf_file = models.FileField(upload_to='foo/', validators=[FileExtensionValidator(allowed_extensions=['pdf'])])
+    #pdf_file = models.FileField(upload_to'', validators=[FileExtensionValidator(allowed_extensions=['pdf'])])
+    docfile = models.FileField(default = 'blank.pdf', upload_to = '')
+    starting_page = models.IntegerField(default = 1)
+    ending_page = models.IntegerField(default = 1)
+    no_of_copies = models.IntegerField(default = 1)
+    black_and_white = models.BooleanField(default = True)
 
     # order details
     cost = models.IntegerField(default = 0)
     date_ordered = models.DateTimeField(default = timezone.now)
     payment_status = models.BooleanField(default = False)
     printing_status = models.BooleanField(default = False)
+    payment_id = models.CharField(default = '0000000000', max_length=100)
 
     def __str__(self):
         return self.customer_name
