@@ -1,0 +1,26 @@
+<!-- Copyright (c) Microsoft Corporation.
+     Licensed under the MIT License. -->
+
+<!-- <HomeSnippet> -->
+{% extends "authentication/layout.html" %}
+{% block content %}
+<div class="jumbotron">
+  <p class="lead">Get all your pages printed at one click!</p>
+  {% if user.is_authenticated %}
+    <h4>Welcome !! Please check your Credentials</h4>
+    <h5>Name : {{ user.name }}</h5>
+    <h5>official Email-id : {{ user.email }}</h5>
+
+    {% if user.shopkeeper_status %}
+      <a href="{% url 'shopkeeper-orders' %}" class="btn btn-primary btn-large">Click here to view your oders. You are shopkeeper.</a>
+    {% else %}
+      <a href="{% url 'customer-orders' %}" class="btn btn-primary btn-large">Click here to view your oders. You are customer.</a>
+    {% endif %}
+
+  {% else %}
+    <h4>Only IIT Guwahati students can log in :)</h4>
+    <a href="{% url 'signin' %}" class="btn btn-primary btn-large">Sign in</a>
+  {% endif %}
+</div>
+{% endblock %}
+<!-- </HomeSnippet> -->
