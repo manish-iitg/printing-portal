@@ -21,15 +21,11 @@ def gateway(request):
 @csrf_exempt
 def success(request):
     if request.method == "POST":
-        a = request.POST
-        print(a)
-        for key, val in a.items():
-            if key == "razorpay_order_id":
-                order_id = val
-                break
-        print("order_id ", order_id)
-        user = order.objects.filter(payment_id = order_id).first()
-        print("user ",user)
+        body = request.POST
+        for key, val in body.items():
+            if key == "razorpay_payment_id": pay_id = val
+
+        user = order.objects.filter(payment_id = pay_id).first()
         user.payment_status = True
         user.save()
         messages.success(request,f'Your order has been placed.')
