@@ -12,9 +12,9 @@
     <h5>official Email-id : {{ user.email }}</h5>
 
     {% if user.shopkeeper_status %}
-      <a href="{% url 'shopkeeper-orders' %}" class="btn btn-primary btn-large">Pending orders to be printed</a>
+      <a href="{% url 'shopkeeper_orders' %}" class="btn btn-primary btn-large">Pending orders to be printed</a>
     {% else %}
-      <a href="{% url 'customer-orders' %}" class="btn btn-primary btn-large">Click here to view your recent oders</a>
+      <a href="{% url 'customer_orders' %}" class="btn btn-primary btn-large">Click here to view your recent oders</a>
       <a href="{% url 'place_order' %}" class="btn btn-primary btn-large">Place a new order</a>
     {% endif %}
 
