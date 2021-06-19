@@ -11,11 +11,10 @@ def gateway(request):
         order_instance = order.objects.filter(customer_email = email).last()
         cost = order_instance.cost*100
         client = razorpay.Client(auth = ("rzp_test_aBF0M5yvtP4PDr", "lPodFzCQ4YXDa9l8XfYCfgB3"))
-        payment = client.order.create({'amount':cost, 'currency': 'INR', 'payment_capture':'1'})
-        print(payment)
-        order_instance.payment_id = payment['id']
+        razorpay_order_generation = client.order.create({'amount':cost, 'currency': 'INR', 'payment_capture':'1'})
+        order_instance.order_id = razorpay_order_generation['id']
         order_instance.save()
-        return render(request,'payment/index.html', {'payment':payment})
+        return render(request,'payment/index.html', {'order': razorpay_order_generation})
 
     return render(request,'payment/index.html')
 
@@ -27,7 +26,7 @@ def success(request):
             if key == "razorpay_order_id":
                 order_id = val
                 break
-        user = order.objects.filter(payment_id = order_id).first()
+        user = order.objects.get(order_id = order_id)
         user.payment_status = True
         user.save()
         messages.success(request,f'Your order has been placed.')

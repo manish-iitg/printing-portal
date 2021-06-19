@@ -8,5 +8,5 @@ urlpatterns = [
     path('place_order', order_views.place_order, name = 'place_order'), 
     url(r'^download/(?P<path>.*)$',order_views.download, name = 'download'),
     url(r'^change/(?P<path>.*)$',order_views.status_change,name = 'change'),
-    url(r'^valid/(?P<path>.*)$',order_views.validator,name = 'valid'),
+    url(r'^valid/(?P<path>.*)$',order_views.OTP_validator,name = 'valid'),
 ]

@@ -26,7 +26,7 @@ class order(models.Model):
     printing_status = models.BooleanField(default = False)
     collected_status = models.BooleanField(default = False)
 
-    payment_id = models.CharField(max_length=50)
+    order_id = models.CharField(max_length=50)
 
     def __str__(self):
         return self.customer_name

@@ -3,8 +3,7 @@ import random
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import reverse
+from django.http import HttpResponse
 from order.models import order
 from .forms import PlaceOrderForm, OTPForm
 from PyPDF2 import PdfFileMerger
@@ -18,9 +17,10 @@ def customer(request):
 
 # quering into the database to find out the orders reamining to be printed by the shopkeeper
 def shopkeeper(request):
+    form = OTPForm()
     email = request.session['user']['email']
-    all_entries = order.objects.filter(shopkeeper_email = email, payment_status = True, printing_status = False)
-    return render(request, 'order/display.html', {'all_entries' : all_entries, 'shopkeeper_status': True})
+    all_entries = order.objects.filter(shopkeeper_email = email, payment_status = True, collected_status = False)
+    return render(request, 'order/display.html', {'all_entries' : all_entries, 'shopkeeper_status': True, 'form': form})
 
 def place_order(request):
     if request.method == 'POST':
@@ -38,11 +38,11 @@ def place_order(request):
             OTP = random.randint(1000, 10000)
 
             #creating extra pdf having name and email
-            #os.chdir(settings.MEDIA_ROOT)
+            os.chdir(settings.MEDIA_ROOT)
             #extrahash = random.randint(10000,100000)
-            #fileName = str(extrahash)+ customer_email + '.pdf'
-            #title = customer_name
-            #subTitle = customer_email
+            #fileName = str(extrahash)+ email + '.pdf'
+            #title = name
+            #subTitle = email
             #pdf = canvas.Canvas(fileName)
             #pdf.setFont("Courier-Bold", 36)
             #pdf.drawCentredString(300, 590, title)
@@ -85,53 +85,58 @@ def place_order(request):
                 black_and_white = black_and_white,
                 cost = cost,
             )
-            return HttpResponseRedirect(reverse('gateway'))
+            return redirect('gateway')
     else : 
         form = PlaceOrderForm()
-        key = 'user'
-        if key in request.session:
-            return render(request,'order/place_order.html',{'form':form, 'user': request.session[key]}) 
+        if request.session['user']:
+            return render(request,'order/place_order.html',{'form': form, 'user': request.session['user']}) 
         else:
             return redirect('home')
 
 def download(request, path):
-    file_path = path
+    # file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+    # if os.path.exists(file_path):
+
     os.chdir(settings.MEDIA_ROOT)
-    if os.path.exists(file_path):
-        with open(file_path, 'rb') as fh:
+    if os.path.exists(path):
+        with open(path, 'rb') as fh:
             response = HttpResponse(fh.read(), content_type="application/force-download")
-            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(path)
             return response
     else :
         messages.warning(request,f'Document not found.')
         return redirect('home')
     
-def status_change(request,path):
-    transaction = order.objects.filter(payment_id = path)
+def status_change(request, path):
+    print(path)
+    transaction = order.objects.get(order_id = path)
     transaction.printing_status = True
-    transaction.update(printing_status= True)
-    print(type(transaction))
-    messages.success(request,f'We will inform {transaction.last().customer_name} that documents have been printed.')
+    transaction.save()
+
+    messages.success(request,f'We will inform {transaction.customer_name} that documents have been printed.')
     return redirect('shopkeeper_orders')
 
-def validator(request,path):
+def OTP_validator(request,path):
     form = OTPForm(request.POST)
     if form.is_valid() :
-           data = form.cleaned_data
-           OTP = data['OTP']
-           transaction = order.objects.get(payment_id = path)
-           tras = order.objects.filter(payment_id=path)
-           if transaction.OTP == OTP:
-                 tras.update(collected_status=True)
-                 os.chdir(settings.MEDIA_ROOT)
-                 if os.path.exists(transaction.docfile.name):
-                    os.remove(transaction.docfile.name)
-                 if os.path.exists(transaction.extra_file_name):
-                    os.remove(transaction.extra_file_name)
-                 messages.success(request,f'{transaction.customer_name} have collected his documents.')
-                 return redirect('shopkeeper_orders')
-           else :
-               messages.warning(request,f'Wrong OTP entered.')
-               return redirect('shopkeeper_orders')
+        data = form.cleaned_data
+        OTP = data['OTP']
+        transaction = order.objects.get(order_id = path)
+        if transaction.OTP == OTP:
+            transaction.collected_status=True
+            transaction.save()
 
+            file_path = os.path.join(settings.MEDIA_ROOT, transaction.docfile.name)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            #if os.path.exists(transaction.extra_file_name):
+                #os.remove(transaction.extra_file_name)
+            messages.success(request, f'{transaction.customer_name} has collected his documents')
+            return redirect('shopkeeper_orders')
+        else :
+            messages.warning(request,f'Wrong OTP entered')
+            return redirect('shopkeeper_orders')
+    else:
+        messages.error(request,f'An error occured! Please try again')
+        return redirect('shopkeeper_orders')
 
