@@ -6,8 +6,17 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from order.models import order
 from .forms import PlaceOrderForm, OTPForm
-from PyPDF2 import PdfFileMerger
+from reportlab.pdfgen import canvas 
+from PyPDF2 import PdfFileMerger, PdfFileWriter
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 
+# a dict having possible shop options
+shops = {
+    'aagrahari@iitg.ac.in': 'Library',
+    'mgupta@iitg.ac.in': 'CORE-1',
+    'manish21082000@iitg.ac.in': 'Lohit Hostel Stationary',
+}
 # Create your views here.
 # quering into the database to find out the orders placed by the customers
 def customer(request):
@@ -28,41 +37,51 @@ def place_order(request):
         if form.is_valid():
             name = request.session['user']['name']
             email = request.session['user']['email']
+
             files = request.FILES.getlist('docfile')
+            limit = 10*1024*1024
 
-            shop_email = 'mgupta@iitg.ac.in'
-            shop_location = 'CORE-1'
+            # validation checks for file size and file type
+            if len(files) > 5:
+                return HttpResponse('Please select atmost 5 files at a time!')
+            for file in files:
+                if file.size > limit:
+                    return HttpResponse('File too large. Size should not exceed 10 MB.')
+                if not file.name.endswith(".pdf"):
+                    return HttpResponse('File type unsupported. Please upload pdf files only.')
 
-            no_of_copies = form.cleaned_data.get('no_of_copies')
-            black_and_white = form.cleaned_data.get('black_and_white')
+            # order details
+            data = form.cleaned_data
+            shop_email = data.get('shopkeeper_email')
+            for key in shops:
+                if key == shop_email:
+                    shop_location = shops[key]
+
+            no_of_copies = data.get('no_of_copies')
+            black_and_white = data.get('black_and_white')
             OTP = random.randint(1000, 10000)
 
-            #creating extra pdf having name and email
+            
             os.chdir(settings.MEDIA_ROOT)
-            #extrahash = random.randint(10000,100000)
-            #fileName = str(extrahash)+ email + '.pdf'
-            #title = name
-            #subTitle = email
-            #pdf = canvas.Canvas(fileName)
-            #pdf.setFont("Courier-Bold", 36)
-            #pdf.drawCentredString(300, 590, title)
-            #pdf.setFont("Courier-Bold", 24)
-            #pdf.drawCentredString(290,500, subTitle)
-            #pdf.save()
-
+            #creating the pdf having name and email
+            pdf = canvas.Canvas('name_email.pdf')
+            pdf.setFont("Courier-Bold", 36)
+            pdf.drawCentredString(300, 590, name)
+            pdf.setFont("Courier-Bold", 24)
+            pdf.drawCentredString(290,500, email)
+            pdf.save()
 
             # pdf merging
             merger = PdfFileMerger()
-            for items in files:
-                merger.append(items)
-            #pdfname = random.randint(10000,100000)
-            merged_file_name = email + '.pdf' #+ str(pdfname) 
-            #merger.append(fileName)
-            merger.write(merged_file_name)
+            for file in files:
+                merger.append(file)
+            merger.append('name_email.pdf')
+            all_entries = order.objects.filter(customer_email = email)
+            merged_file_name = email + '-' + str(len(all_entries)) + '.pdf' 
             num_pages = len(merger.pages)
+            merger.write(merged_file_name)
             merger.close()
 
-            
             #calculating cost
             price_black_and_white = 1
             price_color = 5
@@ -86,6 +105,8 @@ def place_order(request):
                 cost = cost,
             )
             return redirect('gateway')
+        else:
+            return HttpResponse('form enteries are invalid')
     else : 
         form = PlaceOrderForm()
         if request.session['user']:
@@ -129,8 +150,6 @@ def OTP_validator(request,path):
             file_path = os.path.join(settings.MEDIA_ROOT, transaction.docfile.name)
             if os.path.exists(file_path):
                 os.remove(file_path)
-            #if os.path.exists(transaction.extra_file_name):
-                #os.remove(transaction.extra_file_name)
             messages.success(request, f'{transaction.customer_name} has collected his documents')
             return redirect('shopkeeper_orders')
         else :

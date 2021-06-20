@@ -1,9 +1,10 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
+from django.contrib import messages
 from authentication.auth_helper import get_sign_in_url, get_token_from_code, store_token, store_user, remove_user_and_token, get_token
 from authentication.graph_helper import get_user, get_calendar_events
 import dateutil.parser
@@ -45,7 +46,7 @@ def sign_in(request):
 def sign_out(request):
   # Clear out the user and token
   remove_user_and_token(request)
-
+ 
   return HttpResponseRedirect(reverse('home'))
 # </SignOutViewSnippet>
 
@@ -58,12 +59,14 @@ def callback(request):
 
   # Get the user's profile
   user = get_user(token)
-  
-  # Save token and user
-  store_token(request, token)
-  store_user(request, user)
+  if user['mail'] and user['mail'].endswith("@iitg.ac.in"):
+    # Save token and user
+    store_token(request, token)
+    store_user(request, user)
 
-  return HttpResponseRedirect(reverse('home'))
+    return HttpResponseRedirect(reverse('home'))
+  else:
+    return render(request, 'authentication/sign_in_failed.html')
 # </CallbackViewSnippet>
 
 # <CalendarViewSnippet>

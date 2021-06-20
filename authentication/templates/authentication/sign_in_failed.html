@@ -1,0 +1,9 @@
+{% extends "authentication/layout.html" %}
+{% block content %}
+  <div class="jumbotron">
+    <p class="lead">Sign in Failed. Please login with your IITG account to place your printing order.</p>
+      <a href="{% url 'signin' %}" class="btn btn-primary btn-large">Sign in</a>
+  </div>
+{% endblock %}
+
+    

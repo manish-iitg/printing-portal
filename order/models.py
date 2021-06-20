@@ -14,7 +14,7 @@ class order(models.Model):
     shopkeeper_location = models.CharField(max_length=100)
 
     # doc info(files, pages to be printed, black/white or colour, etc)
-    docfile = models.FileField(upload_to = '', default = 'blank.pdf', validators=[FileExtensionValidator(allowed_extensions=['pdf'])])
+    docfile = models.FileField(upload_to = '', default = 'blank.pdf')
     no_of_copies = models.IntegerField(default = 1)
     black_and_white = models.BooleanField(blank = True, default = True)
 
