@@ -15,7 +15,7 @@ from django.core.validators import FileExtensionValidator
 shops = {
     'aagrahari@iitg.ac.in': 'Library',
     'mgupta@iitg.ac.in': 'CORE-1',
-    'manish21082000@iitg.ac.in': 'Lohit Hostel Stationary',
+    'kevin@iitg.ac.in': 'Lohit Hostel Stationary',
 }
 # Create your views here.
 # quering into the database to find out the orders placed by the customers
@@ -65,9 +65,9 @@ def place_order(request):
             os.chdir(settings.MEDIA_ROOT)
             #creating the pdf having name and email
             pdf = canvas.Canvas('name_email.pdf')
-            pdf.setFont("Courier-Bold", 36)
-            pdf.drawCentredString(300, 590, name)
             pdf.setFont("Courier-Bold", 24)
+            pdf.drawCentredString(300, 590, name)
+            pdf.setFont("Courier-Bold", 18)
             pdf.drawCentredString(290,500, email)
             pdf.save()
 
@@ -126,7 +126,7 @@ def download(request, path):
             return response
     else :
         messages.warning(request,f'Document not found.')
-        return redirect('home')
+        return redirect('shopkeeper_orders')
     
 def status_change(request, path):
     print(path)

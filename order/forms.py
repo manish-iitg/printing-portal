@@ -10,7 +10,7 @@ CHOICES = (
 shop_CHOICES = ( 
     ('mgupta@iitg.ac.in', 'CORE-1'),
     ('aagrahari@iitg.ac.in', 'Library'),
-    ('manish21082000@iitg.ac.in', 'Lohit Hostel Stationary'),
+    ('kevin@iitg.ac.in', 'Lohit Hostel Stationary'),
 )
 
 class PlaceOrderForm(forms.Form):

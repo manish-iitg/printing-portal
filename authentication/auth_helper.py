@@ -49,10 +49,11 @@ def get_token_from_code(callback_url, expected_state):
 
 # </FirstCodeSnippet>
 shops = {
-    'aagrahari@iitg.ac.in'
-    'mgupta@iitg.ac.in',
-    'manish21082000@iitg.ac.in'
+  'aagrahari@iitg.ac.in'
+  'mgupta@iitg.ac.in',
+  'kevin@iitg.ac.in'
 }
+
 def store_token(request, token):
       request.session['oauth_token'] = token
 
@@ -61,8 +62,10 @@ def store_user(request, user):
     'is_authenticated': True,
     'name': user['displayName'],
     'email': user['mail'],
-    'shopkeeper_status': True if(user['mail'] == val for val in shops) else False
+    #'shopkeeper_status': True if(user['mail'] == val for val in shops) else False
+    'shopkeeper_status': True if(user['mail'] == 'mgupta@iitg.ac.in') else False
   }
+  print(request.session['user']['shopkeeper_status'])
 
 # <GetTokenSnippet>
 def get_token(request):

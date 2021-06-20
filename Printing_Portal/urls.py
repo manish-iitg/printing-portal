@@ -8,10 +8,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', include('authentication.urls')),
-    path('', include('order.urls')),
-    path('', include('payment.urls')),
-    path('admin/', admin.site.urls),
+    path('printing_portal/', include('authentication.urls')),
+    path('printing_portal/', include('order.urls')),
+    path('printing_portal/', include('payment.urls')),
+    path('printing_portal/admin/', admin.site.urls),
 ]
 # </UrlConfSnippet>
 
